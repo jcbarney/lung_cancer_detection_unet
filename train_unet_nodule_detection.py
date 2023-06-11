@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[ ]:
-
-
 import SimpleITK as sitk
 import matplotlib.pylab as plt
 from scipy.ndimage.filters import gaussian_filter
@@ -57,11 +51,6 @@ def preprocess(image):
     max_hu = -320
     ct_scan_thresh_mask = np.clip(ct_scan_thresh_mask, min_hu, max_hu)
     ct_scan_thresh_mask = ct_scan_thresh_mask < -400
-    
-    #######################################################################################################
-    ##https://www.kaggle.com/code/arnavkj95/candidate-generation-and-luna16-preprocessing/notebook########
-    ##### preprocessing ideas taken from the above website ###############################################
-    #######################################################################################################
 
     # remove peices of scan that aren't part of lung tissues
     for i in range(ct_scan_thresh_mask.shape[0]):
@@ -72,10 +61,6 @@ def preprocess(image):
     # assign masked regions to original ct
     ct_scan[ct_scan_thresh_mask == False] = -3024
     ct_scan[ct_scan < -400] = -3024
-    
-    #######################################################################################################
-    ##### End preprocesing ideas########################### ###############################################
-    #######################################################################################################
 
     # set to between 0 and 1 for model
     for i in range(ct_scan.shape[0]):
@@ -146,10 +131,6 @@ def get_unet_input():
 
 
 def train_unet(X_train, y_train):
-    #############################################################################################################################################################
-    ############### Code mostly taken from DigitalSreeni at https://www.youtube.com/watch?v=GAYJ81M58y8 ################################################################
-    ############### Using this code as it matches the U-Net model needed, with updates to parameters and the addition of dropout layers #################
-    ##############################################################################################################################################################
     from keras.utils import normalize
     from tensorflow.keras.optimizers import Adam
     from tensorflow.keras.layers import (
@@ -233,11 +214,6 @@ def train_unet(X_train, y_train):
     )
     model.summary()
 
-    ############################################################################################
-    ########## end code taken from DigitalSreeni ###############################################
-    ###################### at https://www.youtube.com/watch?v=GAYJ81M58y8#######################
-    ############################################################################################
-
     # get top 8 suspicious non-overlapping regions for cancer/non-cancer
 
     from keras.callbacks import ModelCheckpoint
@@ -253,10 +229,6 @@ def train_unet(X_train, y_train):
     model.fit(X_train, y_train, epochs=10, batch_size=10, callbacks=callbacks_list)
     return model
 
-
-# In[ ]:
-
-
 #get training data
 inputs, outputs = get_unet_input()
 np_input = np.array(inputs)
@@ -270,10 +242,6 @@ filename = "inputs_0502".sav"
 pickle.dump(np_input, open(filename, 'wb'))
 filename = "outputs_0502".sav"
 pickle.dump(np_output, open(filename, 'wb'))
-
-
-# In[ ]:
-
 
 #train unet
 train_unet(np_input, np_output)
