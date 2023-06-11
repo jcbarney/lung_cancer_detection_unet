@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[3]:
-
-
 import SimpleITK as sitk
 from PIL import Image, ImageOps
 import matplotlib.pylab as plt
@@ -22,15 +16,7 @@ import cv2
 import skimage
 import pickle
 
-
-# In[ ]:
-
-
 input_images = []
-
-
-# In[285]:
-
 
 def preprocess_kaggle(ct_scan_loc):
     # get image and pull origin and spacing for translating nodule coordinates from file
@@ -49,15 +35,7 @@ def preprocess_kaggle(ct_scan_loc):
     min_hu = 100 #100
     max_hu = 175 #175
     ct_scan_thresh_mask = np.clip(ct_scan_thresh_mask, min_hu, max_hu)
-    
-    #######################################################################################################
-    ##https://www.kaggle.com/code/arnavkj95/candidate-generation-and-luna16-preprocessing/notebook########
-    ##### preprocessing ideas taken from the above website ###############################################
-    #######################################################################################################
     ct_scan_thresh_mask = clear_border(ct_scan_thresh_mask)
-    #######################################################################################################
-    ##### End preprocesing ideas########################### ###############################################
-    #######################################################################################################
     
     # set paramters for blob detector
     params = cv2.SimpleBlobDetector_Params()
@@ -152,10 +130,6 @@ def top_nodules(image):
     
     
 def train_model(X_train, y_train):
-    #############################################################################################################################################################
-    ############### Code mostly taken from DigitalSreeni at https://www.youtube.com/watch?v=GAYJ81M58y8 ################################################################
-    ############### Using this code as it matches the U-Net model needed, with updates to parameters and the addition of dropout layers #################
-    ##############################################################################################################################################################
     from tensorflow.keras.utils import normalize
     from tensorflow.keras.optimizers import Adam
     from keras.layers import (
@@ -193,11 +167,6 @@ def train_model(X_train, y_train):
     )
     model.summary()
 
-    ############################################################################################
-    ########## end code taken from DigitalSreeni ###############################################
-    ###################### at https://www.youtube.com/watch?v=GAYJ81M58y8#######################
-    ############################################################################################
-
     # get top 8 suspicious non-overlapping regions for cancer/non-cancer
 
     from keras.callbacks import ModelCheckpoint
@@ -212,9 +181,6 @@ def train_model(X_train, y_train):
     #train model
     model.fit(X_train, y_train, epochs=10, batch_size=5, callbacks=callbacks_list, validation_split=0.1,)
     return model
-
-
-# In[264]:
 
 
 #get all images adn save their labels
@@ -284,11 +250,6 @@ while (yes < 110) | (no < 40):
                 break
             x+=1
             
-
-
-# In[267]:
-
-
 #save for use later in case needed
 filename = "quad_nodules.sav"
 pickle.dump(quad_nodules, open(filename, "wb"))
@@ -299,20 +260,12 @@ pickle.dump(test_set, open(filename, "wb"))
 quad_nodules_x = [i[0] for i in quad_nodules]
 quad_nodules_y = [i[1] for i in quad_nodules]
 
-
-# In[286]:
-
-
 #convert to numpu arrays and train model
 quad_nodules_x = np.array(quad_nodules_x)
 # quad_nodules_x = np_input.reshape(len(quad_nodules_x), 64, 64, 1)
 quad_nodules_y = np.array(quad_nodules_y)
 # quad_nodules_y = np_input.reshape(len(quad_nodules_y), 1)
 cancer_model = train_model(quad_nodules_x, quad_nodules_y)
-
-
-# In[287]:
-
 
 # test on test set
 # get input and outputs
@@ -331,10 +284,6 @@ result_df['actual'] = test_nodules_y
 # chose 80% as cutoff for prediction - could move either way to increase/decrease FP and FN
 result_df['prediction'] = 0
 result_df.loc[result_df['probability']>=0.8,'prediction'] = 1
-
-
-# In[321]:
-
 
 # calculate metrics
 accuracy = len(result_df[result_df['prediction'] == result_df['actual']]) / len(result_df)
@@ -355,15 +304,7 @@ print('F1: ', f1)
 print('False Negative: ', fnr)
 print('False Positive: ', fpr)
 
-
-# In[302]:
-
-
 plt.hist(result_df['probability'][result_df['actual'] == 1], bins=20)
-
-
-# In[300]:
-
 
 plt.hist(result_df['probability'][result_df['actual'] == 0], bins=20)
 
